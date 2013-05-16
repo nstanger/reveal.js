@@ -1664,7 +1664,7 @@ var Reveal = (function(){
 
 			if( fragments.length ) {
 				// There may be multiple fragments with the same index. We want to display all of them.
-				var prevFragmentIndex = fragments[0].getAttribute( 'data-fragment-index' );
+				var prevFragmentIndex = fragments[ fragments.length - 1 ].getAttribute( 'data-fragment-index' );
 				
 				toArray( fragments ).forEach( function( thisFragment ) {
 					var f = thisFragment.getAttribute( 'data-fragment-index' );
