@@ -142,6 +142,9 @@
 				if ( ( thisClass === "center" ) || ( thisClass === "centre" ) ) img.style.left = ( ( parentWidth - targetWidth - imgMarginLeft - imgMarginRight ) >> 1 ) + "px";
 				if ( thisClass === "right" ) img.style.left = ( parentWidth - targetWidth - imgMarginRight ) + "px";
 			}
+			
+// 			console.log( "image " + img.getAttribute( "alt" ) + " (" + (!img.complete?"in":"") + "complete):" );
+// 			console.log( "    " + targetWidth + " × " + targetHeight + "; top: " + img.style.top + ", left: " + img.style.left );
 		}
 	}
 })();

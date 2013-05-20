@@ -195,6 +195,9 @@
 			svgURL = img.getAttribute( 'src' ),
 			request = new XMLHttpRequest();
 		
+		console.log( "image " + img.getAttribute( "alt" ) + " (" + (!img.complete?"in":"") + "complete):" );
+		console.log( "    " + img.width + " × " + img.height + "; top: " + img.style.top + ", left: " + img.style.left );
+
 		request.onreadystatechange = function ()
 		{
 			if( request.readyState === 4 )
@@ -233,6 +236,10 @@
 					// Set width and height the same as the replaced img.
 					svg.setAttribute( 'width', img.width );
 					svg.setAttribute( 'height', img.height );
+					
+					console.log( "svg " + svg.getAttribute( "id" ) + " (img " + (!img.complete?"in":"") + "complete):" );
+					console.log( "    corresponding IMG " + img.getAttribute( "alt" ) + " is " + img.width + " × " + img.height );
+					console.log( "    " + svg.getAttribute( "width" ) + " × " + svg.getAttribute( "height" ) );
 					
 					imgParent.replaceChild( svg, img );
 				}
