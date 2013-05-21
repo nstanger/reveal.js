@@ -4,10 +4,8 @@
  * to individual elements of the SVG image. (You can't do this if the SVG is
  * loaded offline via an IMG element.)
  */
-(function()
+var inlineSVGs = function()
 {
-	function NotSVGException() {}
-	
 	// Shim to add classList property to SVGElement, adapted from
 	// http://purl.eligrey.com/github/classList.js/blob/master/classList.js
 	// SVGElement in Safari currently doesn't implement the classList property.
@@ -195,9 +193,6 @@
 			svgURL = img.getAttribute( 'src' ),
 			request = new XMLHttpRequest();
 		
-		console.log( "image " + img.getAttribute( "alt" ) + " (" + (!img.complete?"in":"") + "complete):" );
-		console.log( "    " + img.width + " × " + img.height + "; top: " + img.style.top + ", left: " + img.style.left );
-
 		request.onreadystatechange = function ()
 		{
 			if( request.readyState === 4 )
@@ -209,7 +204,7 @@
 					// Sanity check: is what we got an SVG element?
 					if ( !( svg instanceof SVGElement ) )
 					{
-						throw new NotSVGException();
+						throw 'NotAnSVG';
 					}
 					
 					// Add replaced image's ID to the new SVG
@@ -245,12 +240,9 @@
 				}
 				else
 				{
-						// Do something sensible; possibly nothing??
-// 						section.outerHTML = '<section data-state="alert">ERROR: The attempt to fetch ' + svgURL + ' failed with the HTTP status ' + request.status +
-// 							'. Check your browser\'s JavaScript console for more details.' +
-// 							'<p>Remember that you need to serve the presentation HTML from a HTTP server and the Markdown file must be there too.</p></section>';
-					}
+					throw request.status;
 				}
+			}
 		};
 		
 		request.open('GET', svgURL, false);
@@ -260,14 +252,28 @@
 		}
 		catch ( e )
 		{
-			if ( e instanceof NotSVGException )
+			if ( e === 'NotAnSVG' )
 			{
-				alert( 'You have applied the data-inline-svg attribute to a non-SVG image.' );
+				alert( "You have attempted to inline something that doesn't appear to be an SVG image." );
 			}
 			else
 			{
-				alert('Failed to get the SVG file ' + svgURL + '. Make sure that the presentation and the file are served by a HTTP server and the file can be found there. ' + e);
+				alert('Failed to get the SVG file ' + svgURL + ' (HTTP ' + e + '). Make sure that the presentation and the file are served by a HTTP server and the file can be found there.');
 			}
 		}
 	}
-})();
+}
+
+/*
+	We need to ensure that the original image dimensions have been finalised.
+	If the position-images plugin has been used, we need to wait for it to finish,
+	otherwise wait for the document to be ready.
+*/
+if ( typeof positionImages !== 'undefined' )
+{
+	head.ready( 'plugins/position-images/position-images.js', inlineSVGs() );
+}
+else
+{
+	head.ready( document, inlineSVGs() );
+}
