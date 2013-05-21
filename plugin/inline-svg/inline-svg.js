@@ -6,10 +6,12 @@
  */
 var inlineSVGs = function()
 {
-	// Shim to add classList property to SVGElement, adapted from
-	// http://purl.eligrey.com/github/classList.js/blob/master/classList.js
-	// SVGElement in Safari currently doesn't implement the classList property.
-	// Other browsers may be similar (Chrome and Firefox appear to be OK).
+	/*
+		Shim to add classList property to SVGElement, adapted from
+		http://purl.eligrey.com/github/classList.js/blob/master/classList.js
+		SVGElement in Safari currently doesn't implement the classList property.
+		Other browsers may be similar (Chrome and Firefox appear to be OK).
+	*/
 	if ( !( 'classList' in document.createElementNS( 'http://www.w3.org/2000/svg', 'svg' ) ) )
 	{
 		(function ( view )
@@ -231,10 +233,6 @@ var inlineSVGs = function()
 					// Set width and height the same as the replaced img.
 					svg.setAttribute( 'width', img.width );
 					svg.setAttribute( 'height', img.height );
-					
-					console.log( "svg " + svg.getAttribute( "id" ) + " (img " + (!img.complete?"in":"") + "complete):" );
-					console.log( "    corresponding IMG " + img.getAttribute( "alt" ) + " is " + img.width + " × " + img.height );
-					console.log( "    " + svg.getAttribute( "width" ) + " × " + svg.getAttribute( "height" ) );
 					
 					imgParent.replaceChild( svg, img );
 				}
