@@ -29,11 +29,19 @@
 var positionImages = function()
 {
 	/*
-		A cross-browser weirdness: in Firefox, max-height (or max-width) for the image is consistently returned as the computed height (in pixels) rather than the specified height (which is a percentage). In WebKit, the percentage value is returned, which seems more as you would expect.
+		A cross-browser weirdness: in Firefox, max-height (or max-width) for the
+		image is consistently returned as the computed height (in pixels) rather
+		than the specified height (which is a percentage). In WebKit, the percentage
+		value is returned, which seems more as you would expect.
 		
-		Conversely, window.getComputedStyle() is supposed to always return the computed value in pixels, but experiment has shown that in WebKit it returns the percentage (!).
+		Conversely, window.getComputedStyle() is supposed to always return the
+		computed value in pixels, but experiment has shown that in WebKit it
+		returns the percentage (!).
 		
-		We therefore need to manually calculate the maximum dimensions for the image in pixels. The quick check for this is to look for a "%" in the returned value, and assume that it's in pixels otherwise (it seems very unlikely that it would be anything else!).
+		We therefore need to manually calculate the maximum dimensions for the
+		image in pixels. The quick check for this is to look for a "%" in the
+		returned value, and assume that it's in pixels otherwise (it seems very
+		unlikely that it would be anything else!).
 		
 		Fortunately, parseInt() is intelligent enough to work in either case.
 	*/
@@ -73,23 +81,16 @@ var positionImages = function()
 			containerDIV.style.position = 'relative';
 			img.style.position = 'absolute';
 	
-			/*
-				Hack from StackOverflow (http://stackoverflow.com/questions/318630/get-real-image-width-and-height-with-javascript-in-safari-chrome) to ensure that the image dimensions are accurate. WebKit loads everything in parallel, so the JavaScript may be executed before the image is fully loaded (resulting in incorrect dimensions). Creating a new image object based on the original source appears to avoid this.
-				
-				This appears to be a problem even in $(window).load(), even though it is supposed to only be called once all objects on the page have been rendered (as expected, however, things definitely break if you use $(document).ready()).
-
-			var	tmpImg = new Image();
-				
-			tmpImg.src = img.getAttribute( "src" );
-			*/
-			
 			var	originalHeight = img.height,
 				originalWidth = img.width,
 				targetHeight = originalHeight,
 				targetWidth = originalWidth;
 	
 			/*
-				The dimensions of the containing DIV parent may be invalid if the section is currently not visible (i.e., display: none). We therefore need to briefly ensure that the section element is visible (i.e., display: block) then set it back to it's original state.
+				The dimensions of the containing DIV parent may be invalid if the
+				section is currently not visible (i.e., display: none). We therefore
+				need to briefly ensure that the section element is visible (i.e.,
+				display: block) then set it back to it's original state.
 			*/
 			var originalVisibility = parentSection.style.display;
 			parentSection.style.display = "block";
@@ -100,7 +101,8 @@ var positionImages = function()
 			parentSection.style.display = originalVisibility;
 			
 			/*
-				We need to adjust for any margins that might be specified, otherwise the image size and positioning will off from what we would expect.
+				We need to adjust for any margins that might be specified, otherwise
+				the image size and positioning will off from what we would expect.
 			*/
 			var	imgMarginTop = parseCSSValue( window.getComputedStyle( img ).marginTop, parentHeight ),
 				imgMarginBottom = parseCSSValue( window.getComputedStyle( img ).marginBottom, parentHeight ),
@@ -134,7 +136,8 @@ var positionImages = function()
 			}
 			
 			/*
-				Apply any alignment classes. In cases of conflict (e.g., class="top bottom"), the last class specified wins.
+				Apply any alignment classes. In cases of conflict (e.g.,
+				class="top bottom"), the last class specified wins.
 			*/
 			var alignClasses = img.classList;
 			for ( var a = 0, aLen = alignClasses.length; a < aLen; a++ )
@@ -151,9 +154,6 @@ var positionImages = function()
 			}
 			
 			img.style.display = originalVisibility;
-			
-// 			console.log( "image " + img.getAttribute( "alt" ) + " (" + (!img.complete?"in":"") + "complete):" );
-// 			console.log( "    " + targetWidth + " × " + targetHeight + "; top: " + img.style.top + ", left: " + img.style.left );
 		}
 	}
 }
