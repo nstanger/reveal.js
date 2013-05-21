@@ -26,7 +26,7 @@
  * agnostic ;) to make the image scale to fit its container as best as possible.
  *
  */
-(function()
+var positionImages = function()
 {
 	/*
 		A cross-browser weirdness: in Firefox, max-height (or max-width) for the image is consistently returned as the computed height (in pixels) rather than the specified height (which is a percentage). In WebKit, the percentage value is returned, which seems more as you would expect.
@@ -107,6 +107,13 @@
 				imgMarginRight = parseCSSValue( window.getComputedStyle( img ).marginRight, parentWidth ),
 				imgMarginLeft = parseCSSValue( window.getComputedStyle( img ).marginLeft, parentWidth );
 			
+			/*
+				Hide the image before we start fiddling with it. This reduces the
+				number of visible transitions that can occur, and may be faster?
+			*/
+			originalVisibility = img.style.display;
+			img.style.display = "none";
+			
 			// Maximise the dimensions of the image if appropriate.
 			if ( img.classList.contains( 'maximize' ) || img.classList.contains( 'maximise' ) ) // dialect agnostic :)
 			{
@@ -143,8 +150,16 @@
 				if ( thisClass === "right" ) img.style.left = ( parentWidth - targetWidth - imgMarginRight ) + "px";
 			}
 			
+			img.style.display = originalVisibility;
+			
 // 			console.log( "image " + img.getAttribute( "alt" ) + " (" + (!img.complete?"in":"") + "complete):" );
 // 			console.log( "    " + targetWidth + " × " + targetHeight + "; top: " + img.style.top + ", left: " + img.style.left );
 		}
 	}
-})();
+}
+
+/*
+	Ensure that we only run once the document is ready, otherwise images may not
+	have completed loaded and have invalid dimensions.
+*/
+head.ready( document, positionImages() )
