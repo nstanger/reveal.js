@@ -4,7 +4,7 @@
  * to individual elements of the SVG image. (You can't do this if the SVG is
  * loaded offline via an IMG element.)
  */
-var inlineSVGs = function()
+(function()
 {
 	/*
 		Shim to add classList property to SVGElement, adapted from
@@ -183,12 +183,10 @@ var inlineSVGs = function()
 		
 	}
 	
-	var inlineImages = document.querySelectorAll( "img[data-inline-svg]" );
 	
-	for ( var i = 0, iLen = inlineImages.length; i < iLen; i++ )
+	function inlineSVG ( img )
 	{
-		var	img = inlineImages[i],
-			imgID = img.getAttribute( 'id' ),
+		var	imgID = img.getAttribute( 'id' ),
 			imgClass = img.getAttribute( 'class' ),
 			imgStyle = img.getAttribute( 'style' ),
 			imgParent = img.parentNode,
@@ -260,18 +258,44 @@ var inlineSVGs = function()
 			}
 		}
 	}
-}
-
-/*
-	We need to ensure that the original image dimensions have been finalised.
-	If the position-images plugin has been used, we need to wait for it to finish,
-	otherwise wait for the document to be ready.
-*/
-if ( typeof positionImages !== 'undefined' )
-{
-	head.ready( 'plugins/position-images/position-images.js', inlineSVGs() );
-}
-else
-{
-	head.ready( document, inlineSVGs() );
-}
+	
+	
+	var inlineImages = document.querySelectorAll( "img[data-inline-svg]" );
+	
+	for ( var i = 0, iLen = inlineImages.length; i < iLen; i++ )
+	{
+		var	img = inlineImages[i];
+		
+		/*
+			We need to ensure that the original image dimensions have been finalised.
+			If the position-images plugin has been used, we need to wait for it to finish
+			what it's doing, otherwise wait for the image to finish loading.
+		*/
+		if ( typeof positionImages !== 'undefined' )
+		{
+			if ( img.isPositioned )
+			{
+				inlineSVG( img );
+			}
+			else
+			{
+				img.addEventListener( 'imagePositioned', ( function() { inlineSVG( this ); } ), false );
+// 				console.log( ">>> added event handler to img " + img.id );
+			}
+		}
+		else
+		{
+			if ( img.complete )
+			{
+				inlineSVG( img );
+			}
+			else
+			{
+				img.addEventListener( 'load', ( function() { inlineSVG( this ); } ), false );
+// 				console.log( ">>> added event handler to img " + img.id );
+			}
+		}
+		
+		
+	}
+})();
