@@ -194,7 +194,7 @@ var positionImage;
 			}
 			else
 			{
-				img.addEventListener( 'load', ( function() { positionImage( this, containerDIV, parentSection, listener ); } ), false );
+				img.addEventListener( 'load', ( function() { positionImage( this, containerDIV, parentSection ); } ), false );
 // 				console.log( ">>> added event handler to img " + img.id );
 			}
 			
