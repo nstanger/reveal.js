@@ -27,7 +27,7 @@
  *
  */
 
-// Needs to be global so other plugins can detect whether this has been loaded.
+// Make this global so other plugins can use it as a flag to detect whether this has been loaded.
 var positionImage;
 
 (function()
@@ -63,7 +63,7 @@ var positionImage;
 	}
 	
 	
-	positionImage = function( img, containerDIV, parentSection, listener )
+	positionImage = function( img, containerDIV, parentSection )
 	{
 		// The container needs to be at least position: relative, and the image position: absolute.
 		containerDIV.style.position = 'relative';
@@ -143,6 +143,15 @@ var positionImage;
 		
 		img.style.display = originalVisibility;
 		
+		img.isPositioned = true;
+		
+		img.dispatchEvent( new CustomEvent(
+				"imagePositioned",
+				{
+					bubbles: true,
+					cancelable: true
+				} ) );
+		
 // 		console.log( "position img " + img.id + ": " + img.width + " × " + img.height );
 	}
 	
@@ -172,6 +181,8 @@ var positionImage;
 		for ( var i = 0, iLen = alignedImages.length; i < iLen; i++ )
 		{
 			var	img = alignedImages[i];
+
+			img.isPositioned = false; // to hold up anyone who has to come after
 			
 			/*
 				If the image has finished loading, go ahead and position it, otherwise
@@ -183,8 +194,7 @@ var positionImage;
 			}
 			else
 			{
-				var listener = ( function() { positionImage( this, containerDIV, parentSection, listener ); } );
-				img.addEventListener( 'load', listener, false );
+				img.addEventListener( 'load', ( function() { positionImage( this, containerDIV, parentSection, listener ); } ), false );
 // 				console.log( ">>> added event handler to img " + img.id );
 			}
 			
