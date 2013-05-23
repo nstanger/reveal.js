@@ -66,7 +66,7 @@ var positionImage;
 	}
 	
 	
-	positionImage = function( img, containerDIV, parentSection )
+	positionImage = function( img, containerDIV, parentSections )
 	{
 		// The container needs to be at least position: relative, and the image position: absolute.
 		containerDIV.style.position = 'relative';
@@ -80,16 +80,24 @@ var positionImage;
 		/*
 			The dimensions of the containing DIV parent may be invalid if the
 			section is currently not visible (i.e., display: none). We therefore
-			need to briefly ensure that the section element is visible (i.e.,
-			display: block) then set it back to it's original state.
+			need to briefly ensure that all parent section elements (there will
+			be > 1 for nested slides) are visible (i.e., display: block) then
+			set back to their original state.
 		*/
-		var originalVisibility = parentSection.style.display;
-		parentSection.style.display = "block";
+		var originalVisibilities = new Array();
+		for ( var s = 0; s < parentSections.length; s++ )
+		{
+			originalVisibilities[s] = parentSections[s].style.display;
+			parentSections[s].style.display = 'block';
+		}
 		
 		var	containerHeight = containerDIV.clientHeight,
 			containerWidth = containerDIV.clientWidth;
 		
-		parentSection.style.display = originalVisibility;
+		for ( var s = 0; s < parentSections.length; s++ )
+		{
+			parentSections[s].style.display = originalVisibilities[s];
+		}
 		
 		/*
 			We need to adjust for any margins that might be specified, otherwise
@@ -175,14 +183,22 @@ var positionImage;
 	for ( var c = 0, cLen = imgContainers.length; c < cLen; c++ )
 	{
 		var containerDIV = imgContainers[c],
-			parentSection = containerDIV,
-			alignedImages = containerDIV.querySelectorAll( 'img.align' );
+			thisParent = containerDIV,
+			alignedImages = containerDIV.querySelectorAll( 'img.align' ),
+			parentSections = new Array();
 		
-		// Find the parent section element. No nice, easy way to do this.
-		while ( parentSection && parentSection.tagName !== 'SECTION' ) parentSection = parentSection.parentNode;
-		if ( !parentSection )
+		/*
+			Find all the parent section element (see comment in positionImage).
+			No nice, easy way to do this.
+		*/
+		while ( ( ( thisParent.tagName !== 'DIV') || !( thisParent.classList.contains( 'slides' ) ) ) && thisParent.parentNode )
 		{
-			throw "presentation contains a DIV with no parent SECTION";
+			if ( thisParent.tagName === 'SECTION' ) parentSections.push( thisParent );
+			thisParent = thisParent.parentNode;
+		}
+		if ( parentSections.length === 0 )
+		{
+			throw "presentation contains a DIV image container outside any SECTION";
 		}
 		
 		for ( var i = 0, iLen = alignedImages.length; i < iLen; i++ )
@@ -197,11 +213,11 @@ var positionImage;
 			*/
 			if ( img.complete )
 			{
-				positionImage( img, containerDIV, parentSection );
+				positionImage( img, containerDIV, parentSections );
 			}
 			else
 			{
-				img.addEventListener( 'load', ( function() { positionImage( this, containerDIV, parentSection ); } ), false );
+				img.addEventListener( 'load', ( function() { positionImage( this, containerDIV, parentSections ); } ), false );
 // 				console.log( ">>> added event handler to img " + img.id );
 			}
 			
