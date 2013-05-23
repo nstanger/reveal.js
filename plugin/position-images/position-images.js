@@ -22,8 +22,11 @@
  * specify coordinates anyway. If you specify conflicting classes (e.g., both
  * "top" and "bottom"), the last one specified wins.
  * 
- * You may also include the class "maximize" (or "maximise", we're dialect
- * agnostic ;) to make the image scale to fit its container as best as possible.
+ * If the image is larger than its container, it will be automatically scaled
+ * to fit along the longest dimension (taking max-width and max-height into
+ * account). If the image is smaller than its container, you can force it to
+ * scale to fit the container by adding the class "fit-to-container" to the
+ * image.
  *
  */
 
@@ -83,8 +86,8 @@ var positionImage;
 		var originalVisibility = parentSection.style.display;
 		parentSection.style.display = "block";
 		
-		var	parentHeight = containerDIV.clientHeight,
-			parentWidth = containerDIV.clientWidth;
+		var	containerHeight = containerDIV.clientHeight,
+			containerWidth = containerDIV.clientWidth;
 		
 		parentSection.style.display = originalVisibility;
 		
@@ -92,10 +95,10 @@ var positionImage;
 			We need to adjust for any margins that might be specified, otherwise
 			the image size and positioning will off from what we would expect.
 		*/
-		var	imgMarginTop = parseCSSValue( window.getComputedStyle( img ).marginTop, parentHeight ),
-			imgMarginBottom = parseCSSValue( window.getComputedStyle( img ).marginBottom, parentHeight ),
-			imgMarginRight = parseCSSValue( window.getComputedStyle( img ).marginRight, parentWidth ),
-			imgMarginLeft = parseCSSValue( window.getComputedStyle( img ).marginLeft, parentWidth );
+		var	imgMarginTop = parseCSSValue( window.getComputedStyle( img ).marginTop, containerHeight ),
+			imgMarginBottom = parseCSSValue( window.getComputedStyle( img ).marginBottom, containerHeight ),
+			imgMarginRight = parseCSSValue( window.getComputedStyle( img ).marginRight, containerWidth ),
+			imgMarginLeft = parseCSSValue( window.getComputedStyle( img ).marginLeft, containerWidth );
 		
 		/*
 			Hide the image before we start fiddling with it. This reduces the
@@ -104,18 +107,22 @@ var positionImage;
 		originalVisibility = img.style.display;
 		img.style.display = "none";
 		
-		// Maximise the dimensions of the image if appropriate.
-		if ( img.classList.contains( 'maximize' ) || img.classList.contains( 'maximise' ) ) // dialect agnostic :)
+		/*
+			Fit the image to its container as appropriate. If the image is larger
+			than the container, it's automatically scaled down. Otherwise it's
+			left as is, unless "fit-to-container" is specified.
+		*/
+		if (img.classList.contains( 'fit-to-container' ) || ( targetHeight > containerHeight ) || ( targetWidth > containerWidth ) )
 		{
 			// Figure out the orientation of the image so that we can maximise the appropriate dimension.
-			if ( ( originalWidth / parentWidth ) > ( originalHeight / parentHeight ) )
+			if ( ( originalWidth / containerWidth ) > ( originalHeight / containerHeight ) )
 			{
-				targetWidth = parseCSSValue( window.getComputedStyle( img ).maxWidth, parentWidth ) - imgMarginRight - imgMarginLeft;
+				targetWidth = parseCSSValue( window.getComputedStyle( img ).maxWidth, containerWidth ) - imgMarginRight - imgMarginLeft;
 				targetHeight = ( targetWidth / originalWidth * originalHeight ) >> 0;
 			}
 			else
 			{
-				targetHeight = parseCSSValue( window.getComputedStyle( img ).maxHeight, parentHeight ) - imgMarginBottom - imgMarginTop;
+				targetHeight = parseCSSValue( window.getComputedStyle( img ).maxHeight, containerHeight ) - imgMarginBottom - imgMarginTop;
 				targetWidth = ( targetHeight / originalHeight * originalWidth ) >> 0;
 			}
 			
@@ -133,12 +140,12 @@ var positionImage;
 			var thisClass = alignClasses[a];
 			
 			if ( thisClass === "top" ) img.style.top = "0px";
-			if ( thisClass === "middle" ) img.style.top = ( ( parentHeight - targetHeight -imgMarginTop - imgMarginBottom ) >> 1 ) + "px";
+			if ( thisClass === "middle" ) img.style.top = ( ( containerHeight - targetHeight -imgMarginTop - imgMarginBottom ) >> 1 ) + "px";
 			// We could just set bottom, but using the same dimension consistently ensures that later classes override earlier ones.
-			if ( thisClass === "bottom" ) img.style.top = ( parentHeight - targetHeight - imgMarginBottom ) + "px";
+			if ( thisClass === "bottom" ) img.style.top = ( containerHeight - targetHeight - imgMarginBottom ) + "px";
 			if ( thisClass === "left" ) img.style.left = "0px";
-			if ( ( thisClass === "center" ) || ( thisClass === "centre" ) ) img.style.left = ( ( parentWidth - targetWidth - imgMarginLeft - imgMarginRight ) >> 1 ) + "px";
-			if ( thisClass === "right" ) img.style.left = ( parentWidth - targetWidth - imgMarginRight ) + "px";
+			if ( ( thisClass === "center" ) || ( thisClass === "centre" ) ) img.style.left = ( ( containerWidth - targetWidth - imgMarginLeft - imgMarginRight ) >> 1 ) + "px";
+			if ( thisClass === "right" ) img.style.left = ( containerWidth - targetWidth - imgMarginRight ) + "px";
 		}
 		
 		img.style.display = originalVisibility;
@@ -152,7 +159,7 @@ var positionImage;
 					cancelable: true
 				} ) );
 		
-// 		console.log( "position img " + img.id + ": " + img.width + " × " + img.height );
+// 		console.log( "position img " + img.id + ": " + targetWidth + " × " + targetHeight + " @ " + img.style.left + ", " + img.style.top );
 	}
 	
 	
