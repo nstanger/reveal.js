@@ -52,7 +52,7 @@ var positionImage;
 		
 		Fortunately, parseInt() is intelligent enough to work in either case.
 	*/
-	function parseCSSValue( srcValue, multiplier )
+	function computeCSSValue( srcValue, multiplier )
 	{
 		if  ( srcValue.indexOf( "%" ) !== -1 )
 		{
@@ -103,17 +103,17 @@ var positionImage;
 			We need to adjust for any margins that might be specified, otherwise
 			the image size and positioning will off from what we would expect.
 		*/
-		var	imgMarginTop = parseCSSValue( window.getComputedStyle( img ).marginTop, containerHeight ),
-			imgMarginBottom = parseCSSValue( window.getComputedStyle( img ).marginBottom, containerHeight ),
-			imgMarginRight = parseCSSValue( window.getComputedStyle( img ).marginRight, containerWidth ),
-			imgMarginLeft = parseCSSValue( window.getComputedStyle( img ).marginLeft, containerWidth );
+		var	imgMarginTop = computeCSSValue( window.getComputedStyle( img ).marginTop, containerHeight ),
+			imgMarginBottom = computeCSSValue( window.getComputedStyle( img ).marginBottom, containerHeight ),
+			imgMarginRight = computeCSSValue( window.getComputedStyle( img ).marginRight, containerWidth ),
+			imgMarginLeft = computeCSSValue( window.getComputedStyle( img ).marginLeft, containerWidth );
 		
 		/*
 			Hide the image before we start fiddling with it. This reduces the
 			number of visible transitions that can occur, and may be faster?
 		*/
-		originalVisibility = img.style.display;
-		img.style.display = "none";
+		originalVisibility = img.style.visibility;
+		img.style.visibility = "hidden";
 		
 		/*
 			Fit the image to its container as appropriate. If the image is larger
@@ -125,12 +125,12 @@ var positionImage;
 			// Figure out the orientation of the image so that we can maximise the appropriate dimension.
 			if ( ( originalWidth / containerWidth ) > ( originalHeight / containerHeight ) )
 			{
-				targetWidth = parseCSSValue( window.getComputedStyle( img ).maxWidth, containerWidth ) - imgMarginRight - imgMarginLeft;
+				targetWidth = computeCSSValue( window.getComputedStyle( img ).maxWidth, containerWidth ) - imgMarginRight - imgMarginLeft;
 				targetHeight = ( targetWidth / originalWidth * originalHeight ) >> 0;
 			}
 			else
 			{
-				targetHeight = parseCSSValue( window.getComputedStyle( img ).maxHeight, containerHeight ) - imgMarginBottom - imgMarginTop;
+				targetHeight = computeCSSValue( window.getComputedStyle( img ).maxHeight, containerHeight ) - imgMarginBottom - imgMarginTop;
 				targetWidth = ( targetHeight / originalHeight * originalWidth ) >> 0;
 			}
 			
@@ -142,21 +142,27 @@ var positionImage;
 			Apply any alignment classes. In cases of conflict (e.g.,
 			class="top bottom"), the last class specified wins.
 		*/
-		var alignClasses = img.classList;
+		var alignClasses = img.classList
+			imgTop = 0,
+			imgLeft = 0;
+			
 		for ( var a = 0, aLen = alignClasses.length; a < aLen; a++ )
 		{
 			var thisClass = alignClasses[a];
 			
-			if ( thisClass === "top" ) img.style.top = "0px";
-			if ( thisClass === "middle" ) img.style.top = ( ( containerHeight - targetHeight -imgMarginTop - imgMarginBottom ) >> 1 ) + "px";
+			if ( thisClass === "top" ) imgTop = "0px";
+			if ( thisClass === "middle" ) imgTop = ( ( containerHeight - targetHeight -imgMarginTop - imgMarginBottom ) >> 1 ) + "px";
 			// We could just set bottom, but using the same dimension consistently ensures that later classes override earlier ones.
-			if ( thisClass === "bottom" ) img.style.top = ( containerHeight - targetHeight - imgMarginBottom ) + "px";
-			if ( thisClass === "left" ) img.style.left = "0px";
-			if ( ( thisClass === "center" ) || ( thisClass === "centre" ) ) img.style.left = ( ( containerWidth - targetWidth - imgMarginLeft - imgMarginRight ) >> 1 ) + "px";
-			if ( thisClass === "right" ) img.style.left = ( containerWidth - targetWidth - imgMarginRight ) + "px";
+			if ( thisClass === "bottom" ) imgTop = ( containerHeight - targetHeight - imgMarginBottom ) + "px";
+			if ( thisClass === "left" ) imgLeft = "0px";
+			if ( ( thisClass === "center" ) || ( thisClass === "centre" ) ) imgLeft = ( ( containerWidth - targetWidth - imgMarginLeft - imgMarginRight ) >> 1 ) + "px";
+			if ( thisClass === "right" ) imgLeft = ( containerWidth - targetWidth - imgMarginRight ) + "px";
 		}
 		
-		img.style.display = originalVisibility;
+		img.style.top = imgTop;
+		img.style.left = imgLeft;
+		
+		img.style.visibility = originalVisibility;
 		
 		img.isPositioned = true;
 		
@@ -167,7 +173,8 @@ var positionImage;
 					cancelable: true
 				} ) );
 		
-// 		console.log( "position img " + img.id + ": " + targetWidth + " × " + targetHeight + " @ " + img.style.left + ", " + img.style.top );
+// 		console.log( "position img " + img.id + ": " + targetWidth + " × " + targetHeight + " @ " + imgLeft + ", " + imgTop );
+// 		console.log( "    container size " + containerWidth + " × " + containerHeight );
 	}
 	
 	
